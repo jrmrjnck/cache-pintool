@@ -121,6 +121,16 @@ bool Cache::access( AccessType type, uintptr_t addr, size_t length )
       }
    }
 
+   // Check if more lines need to be accessed
+   uintptr_t endAddr = addr + length - 1;
+   unsigned int endSet = (endAddr & _setMask) >> _setShift;
+   if( endSet != set )
+   {
+      uintptr_t nextSetBase = (addr & ~_offsetMask) + (1 << _setShift);
+      size_t curSetLen = _lineSize - (addr & _offsetMask);
+      hit = hit && access( type, nextSetBase, length-curSetLen );
+   }
+
    return hit;
 }
 
