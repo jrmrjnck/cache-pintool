@@ -30,6 +30,10 @@ Cache::Cache( size_t cacheSize, size_t lineSize, unsigned int assoc )
    {
       _lines[s] = new CacheLine[_assoc]();
    }
+
+   _misses      = 0;
+   _hits        = 0;
+   _partialHits = 0;
 }
 
 Cache::~Cache()
@@ -61,7 +65,10 @@ bool Cache::access( AccessType type, uintptr_t addr, size_t length )
    }
 
    if( hit )
+   {
       _updateLru( set, targetLine );
+      ++_hits;
+   }
    else
    {
       Directory& dir = _directorySet->find( addr );
@@ -74,6 +81,7 @@ bool Cache::access( AccessType type, uintptr_t addr, size_t length )
       {
          targetLine->state = repState;
          _updateLru( set, targetLine );
+         ++_partialHits;
       }
       else
       {
@@ -108,6 +116,8 @@ bool Cache::access( AccessType type, uintptr_t addr, size_t length )
          destLine.tag = tag;
          destLine.state = repState;
          _updateLru( set, lruWay );
+
+         ++_misses;
       }
    }
 
@@ -159,4 +169,14 @@ Cache::CacheLine* Cache::_find( unsigned int set, uintptr_t tag ) const
          return &line;
    }
    return NULL;
+}
+
+void Cache::printStats( std::ostream& stream ) const
+{
+   stream << _misses      << " Misses" << endl
+          << _hits        << " Hits"   << endl
+          << _partialHits << " Partial Hits" << endl;
+
+   int accesses = _misses + _hits + _partialHits;
+   stream << accesses << " Total Accesses" << endl;
 }

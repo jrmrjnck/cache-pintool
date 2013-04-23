@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <stdint.h>
+#include <iostream>
 
 const int KILO = 1024;
 const int MEGA = KILO*KILO;
@@ -49,6 +50,8 @@ public:
 
    void downgrade( uintptr_t addr, CacheState newState );
 
+   void printStats( std::ostream& stream = std::cout ) const;
+
 private:
    void _updateLru( unsigned int set, CacheLine* usedLine );
    void _updateLru( unsigned int set, unsigned int usedWay );
@@ -69,6 +72,10 @@ private:
    CacheLine** _lines;
 
    DirectorySet* _directorySet;
+
+   int _misses;
+   int _hits;
+   int _partialHits;
 };
 
 #endif // !CACHE_H

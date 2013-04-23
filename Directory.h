@@ -19,6 +19,8 @@ private:
 
    struct DirectoryEntry
    {
+      DirectoryEntry() : modified(false) {}
+
       bool modified;
       std::vector<Cache*> caches;
    };
