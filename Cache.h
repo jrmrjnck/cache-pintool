@@ -1,0 +1,74 @@
+#ifndef CACHE_H
+#define CACHE_H
+
+#include <cstdlib>
+#include <stdint.h>
+
+const int KILO = 1024;
+const int MEGA = KILO*KILO;
+const int GIGA = KILO*MEGA;
+
+class DirectorySet;
+
+enum CacheState
+{
+   Invalid,
+   Shared,
+   Exclusive,
+   Modified
+};
+   struct CacheLine
+   {
+      CacheLine() : tag(0), state(Invalid), age(0) {}
+
+      uintptr_t tag;
+      CacheState state;
+      int age;
+   };
+
+class Cache
+{
+public:
+   enum AccessType
+   {
+      Load,
+      Store
+   };
+
+private:
+
+public:
+   Cache( size_t cacheSize, size_t lineSize = 1, unsigned int assoc = 1 );
+   ~Cache();
+
+   bool access( AccessType type, uintptr_t addr, size_t length );
+
+   void setDirectories( DirectorySet* directorySet );
+
+   unsigned int lineSize() const { return _lineSize; }
+
+   void downgrade( uintptr_t addr, CacheState newState );
+
+private:
+   void _updateLru( unsigned int set, CacheLine* usedLine );
+   void _updateLru( unsigned int set, unsigned int usedWay );
+   
+   CacheLine* _find( unsigned int set, uintptr_t tag ) const;
+
+private:
+   unsigned int _sets;
+   unsigned int _lineSize;
+   unsigned int _assoc;
+
+   uintptr_t _offsetMask;
+   uintptr_t _setMask;
+   int       _setShift;
+   uintptr_t _tagMask;
+   int       _tagShift;
+
+   CacheLine** _lines;
+
+   DirectorySet* _directorySet;
+};
+
+#endif // !CACHE_H
