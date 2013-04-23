@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <cstring>
 
 using namespace std;
 
@@ -19,6 +20,12 @@ int printUsage()
 {
    std::cerr << "Usage: " << KNOB_BASE::StringKnobSummary() << std::endl;
    return -1;
+}
+
+void printIns( void* v )
+{
+   char* s = static_cast<char*>(v);
+   cout << s << endl;
 }
 
 void load( uintptr_t addr, unsigned int size, THREADID tid, void* v )
@@ -37,6 +44,13 @@ void instrumentTrace( TRACE trace, void* v )
    {
       for( INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins) )
       {
+         char* text = strdup( INS_Disassemble(ins).c_str() );
+         INS_InsertCall( ins, 
+                         IPOINT_BEFORE, 
+                         reinterpret_cast<AFUNPTR>(printIns),
+                         IARG_PTR, text,
+                         IARG_END );
+
          if( INS_IsMemoryRead(ins) )
          {
             INS_InsertPredicatedCall( ins, 
