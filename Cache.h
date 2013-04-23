@@ -17,14 +17,6 @@ enum CacheState
    Exclusive,
    Modified
 };
-   struct CacheLine
-   {
-      CacheLine() : tag(0), state(Invalid), age(0) {}
-
-      uintptr_t tag;
-      CacheState state;
-      int age;
-   };
 
 class Cache
 {
@@ -36,6 +28,14 @@ public:
    };
 
 private:
+   struct CacheLine
+   {
+      CacheLine() : tag(0), state(Invalid), age(0) {}
+
+      uintptr_t tag;
+      CacheState state;
+      int age;
+   };
 
 public:
    Cache( size_t cacheSize, size_t lineSize = 1, unsigned int assoc = 1 );

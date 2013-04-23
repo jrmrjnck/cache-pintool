@@ -7,11 +7,6 @@
 #include <map>
 #include <stdint.h>
 
-   struct DirectoryEntry
-   {
-      bool modified;
-      std::vector<Cache*> caches;
-   };
 class Directory
 {
 public:
@@ -22,6 +17,11 @@ public:
 private:
    unsigned int _addrShift;
 
+   struct DirectoryEntry
+   {
+      bool modified;
+      std::vector<Cache*> caches;
+   };
    std::map<uintptr_t,DirectoryEntry> _dir;
 };
 

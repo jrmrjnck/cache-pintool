@@ -150,7 +150,7 @@ void Cache::downgrade( uintptr_t addr, CacheState newState )
    targetLine->state = newState;
 }
 
-CacheLine* Cache::_find( unsigned int set, uintptr_t tag ) const
+Cache::CacheLine* Cache::_find( unsigned int set, uintptr_t tag ) const
 {
    for( unsigned int w = 0; w < _assoc; ++w )
    {
