@@ -31,14 +31,14 @@ CacheState Directory::request( Cache* cache, uintptr_t addr, CacheState reqState
          // A single cache may have an Exclusive copy
          if( dirEntry.caches.size() == 1 )
             dirEntry.caches.front()->downgrade( addr, Shared );
-
-         dirEntry.caches.push_back( cache );
       }
       else
       {
          dirEntry.caches.front()->downgrade( addr, Shared );
          dirEntry.modified = false;
       }
+
+      dirEntry.caches.push_back( cache );
 
       if( dirEntry.caches.size() == 1 )
          return Exclusive;
@@ -55,7 +55,9 @@ CacheState Directory::request( Cache* cache, uintptr_t addr, CacheState reqState
             if( *it != cache )
                (*it)->downgrade( addr, Invalid );
          }
+         dirEntry.caches.clear();
       }
+      dirEntry.caches.push_back( cache );
       dirEntry.modified = (reqState == Modified);
       return reqState;
       break;
