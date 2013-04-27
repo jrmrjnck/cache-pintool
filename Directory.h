@@ -12,17 +12,29 @@ class Directory
 public:
    Directory( unsigned int lineSize );
 
-   CacheState request( Cache* cache, uintptr_t addr, CacheState reqState );
+   CacheState request( Cache* cache, 
+                       uintptr_t addr, 
+                       CacheState reqState, 
+                       bool* safe = nullptr );
 
 private:
    unsigned int _addrShift;
 
    struct DirectoryEntry
    {
-      DirectoryEntry() : modified(false) {}
+      DirectoryEntry() 
+       : modified(false), 
+         owner(nullptr),
+         readOnly(true),
+         shared(false)
+      {}
 
       bool modified;
       std::vector<Cache*> caches;
+
+      Cache* owner;
+      bool readOnly;
+      bool shared;
    };
    std::map<uintptr_t,DirectoryEntry> _dir;
 };

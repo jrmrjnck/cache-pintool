@@ -36,6 +36,7 @@ private:
       uintptr_t tag;
       CacheState state;
       int age;
+      bool safe;
    };
 
 public:
@@ -76,6 +77,8 @@ private:
    int _misses;
    int _hits;
    int _partialHits;
+
+   int _safeAccesses;
 };
 
 #endif // !CACHE_H

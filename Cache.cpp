@@ -71,15 +71,17 @@ bool Cache::access( AccessType type, uintptr_t addr, size_t length )
    }
    else
    {
+      bool safe;
       Directory& dir = _directorySet->find( addr );
       CacheState reqState = (type == Load) ? Shared : Modified;
-      CacheState repState = dir.request( this, addr, reqState );
+      CacheState repState = dir.request( this, addr, reqState, &safe );
 
       assert( repState >= reqState );
 
       if( partialHit )
       {
          targetLine->state = repState;
+         targetLine->safe  = safe;
          _updateLru( set, targetLine );
          ++_partialHits;
       }
@@ -104,6 +106,7 @@ bool Cache::access( AccessType type, uintptr_t addr, size_t length )
          }
 
          CacheLine& destLine = _lines[set][lruWay];
+         targetLine = &destLine;
 
          // Tell directory about eviction
          if( destLine.state != Invalid )
@@ -113,13 +116,17 @@ bool Cache::access( AccessType type, uintptr_t addr, size_t length )
             dir.request( this, evictAddr, Invalid );
          }
 
-         destLine.tag = tag;
+         destLine.tag   = tag;
          destLine.state = repState;
+         destLine.safe  = safe;
          _updateLru( set, lruWay );
 
          ++_misses;
       }
    }
+
+   if( targetLine->safe )
+      ++_safeAccesses;
 
    // Check if more lines need to be accessed
    uintptr_t endAddr = addr + length - 1;
@@ -165,7 +172,7 @@ void Cache::downgrade( uintptr_t addr, CacheState newState )
    unsigned int set = (addr & _setMask) >> _setShift;
 
    CacheLine* targetLine = _find( set, tag );
-   assert( targetLine != NULL );
+   assert( targetLine != nullptr );
 
    targetLine->state = newState;
 }
@@ -178,7 +185,7 @@ Cache::CacheLine* Cache::_find( unsigned int set, uintptr_t tag ) const
       if( line.tag == tag && line.state != Invalid )
          return &line;
    }
-   return NULL;
+   return nullptr;
 }
 
 void Cache::printStats( std::ostream& stream ) const
@@ -186,6 +193,8 @@ void Cache::printStats( std::ostream& stream ) const
    stream << _misses      << " Misses" << endl
           << _hits        << " Hits"   << endl
           << _partialHits << " Partial Hits" << endl;
+
+   stream << _safeAccesses << " Safe Accesses" << endl;
 
    int accesses = _misses + _hits + _partialHits;
    stream << accesses << " Total Accesses" << endl;

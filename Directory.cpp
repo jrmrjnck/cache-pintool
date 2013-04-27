@@ -14,7 +14,10 @@ Directory::Directory( unsigned int lineSize )
 {
 }
 
-CacheState Directory::request( Cache* cache, uintptr_t addr, CacheState reqState )
+CacheState Directory::request( Cache* cache, 
+                               uintptr_t addr, 
+                               CacheState reqState, 
+                               bool* safe )
 {
    addr >>= _addrShift;
 
@@ -22,6 +25,23 @@ CacheState Directory::request( Cache* cache, uintptr_t addr, CacheState reqState
 
    if( dirEntry.modified )
       assert( dirEntry.caches.size() == 1 );
+
+   if( dirEntry.owner == nullptr )
+   {
+      dirEntry.owner = cache;
+      dirEntry.readOnly = reqState < Modified;
+
+      if( safe != nullptr )
+         *safe = true;
+   }
+   else if( dirEntry.owner != cache )
+   {
+      dirEntry.shared = true;
+      dirEntry.readOnly = dirEntry.readOnly || reqState < Modified;
+
+      if( safe != nullptr )
+         *safe = dirEntry.readOnly ? true : false;
+   }
 
    switch( reqState )
    {

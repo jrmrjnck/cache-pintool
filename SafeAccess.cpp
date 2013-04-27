@@ -7,6 +7,7 @@
 #include <fstream>
 #include <vector>
 #include <cstring>
+#include <cassert>
 
 using namespace std;
 
@@ -44,12 +45,13 @@ void instrumentTrace( TRACE trace, void* v )
    {
       for( INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins) )
       {
-         char* text = strdup( INS_Disassemble(ins).c_str() );
-         INS_InsertCall( ins, 
-                         IPOINT_BEFORE, 
-                         reinterpret_cast<AFUNPTR>(printIns),
-                         IARG_PTR, text,
-                         IARG_END );
+         // Leak this memory
+         //char* text = strdup( INS_Disassemble(ins).c_str() );
+         //INS_InsertCall( ins, 
+         //                IPOINT_BEFORE, 
+         //                reinterpret_cast<AFUNPTR>(printIns),
+         //                IARG_PTR, text,
+         //                IARG_END );
 
          if( INS_IsMemoryRead(ins) )
          {
@@ -84,18 +86,26 @@ void addCache( unsigned int tid, CONTEXT* ctxt, int flags, void* v )
    {
       caches.resize( tid + 1, NULL );
    }
-   caches[tid] = new Cache( 32*KILO, CACHE_LINE_SIZE, 4 );
+   caches[tid] = new Cache( 2*KILO, CACHE_LINE_SIZE, 8 );
    caches[tid]->setDirectories( &directorySet );
 }
 
 void deleteCache( unsigned int tid, const CONTEXT* ctxt, int code, void* v )
 {
-   cout << "Cache " << tid << endl;
-   caches[tid]->printStats();
 }
 
 void finish( int code, void* v )
 {
+   ofstream file( "safeaccess.log" );
+   assert( file.good() );
+
+   for( unsigned int i = 0; i < caches.size(); ++i )
+   {
+      file << "Cache " << i << endl;
+      caches[i]->printStats( file );
+      delete caches[i];
+   }
+   caches.clear();
 }
 
 int main(int argc, char *argv[])
