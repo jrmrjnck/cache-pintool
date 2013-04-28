@@ -9,6 +9,9 @@ using namespace std;
 const int PAGE_SHIFT = 12;
 const int PAGE_SIZE = (1 << PAGE_SHIFT);
 
+mutex Directory::_dirMutex;
+mutex DirectorySet::_dsMutex;
+
 Directory::Directory( unsigned int lineSize )
  : _addrShift(floorLog2(lineSize))
 {
@@ -19,6 +22,8 @@ CacheState Directory::request( Cache* cache,
                                CacheState reqState, 
                                bool* safe )
 {
+   lock_guard<mutex> lock( _dirMutex );
+
    addr >>= _addrShift;
 
    DirectoryEntry& dirEntry = _dir[addr];
@@ -119,6 +124,8 @@ DirectorySet::DirectorySet( unsigned int numSites, unsigned int lineSize )
 
 Directory& DirectorySet::find( uintptr_t addr )
 {
+   lock_guard<mutex> lock( _dsMutex );
+
    uintptr_t vpn = addr >> PAGE_SHIFT;
    unsigned int ppn;
 
@@ -133,6 +140,8 @@ Directory& DirectorySet::find( uintptr_t addr )
    }
 
    int siteId = ppn % _sites.size();
+
+   _dsMutex.unlock();
 
    return *_sites[siteId];
 }
