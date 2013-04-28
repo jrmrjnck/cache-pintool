@@ -70,6 +70,8 @@ bool Cache::access( AccessType type, uintptr_t addr, size_t length )
    {
       _updateLru( set, targetLine );
       ++_hits;
+      if( targetLine->safe )
+         ++_safeAccesses;
    }
    else
    {
@@ -126,9 +128,6 @@ bool Cache::access( AccessType type, uintptr_t addr, size_t length )
          ++_misses;
       }
    }
-
-   if( targetLine->safe )
-      ++_safeAccesses;
 
    // Check if more lines need to be accessed
    uintptr_t endAddr = addr + length - 1;
@@ -192,12 +191,9 @@ Cache::CacheLine* Cache::_find( unsigned int set, uintptr_t tag ) const
 
 void Cache::printStats( std::ostream& stream ) const
 {
-   stream << _misses      << " Misses" << endl
-          << _hits        << " Hits"   << endl
-          << _partialHits << " Partial Hits" << endl;
-
-   stream << _safeAccesses << " Safe Accesses" << endl;
-
    int accesses = _misses + _hits + _partialHits;
-   stream << accesses << " Total Accesses" << endl;
+   stream << accesses << " Total Accesses"
+          << " (" << 100.0*_hits/accesses << "% Hits)"
+          << " (" << 100.0*_safeAccesses/accesses << "% Safe)" 
+          << endl;
 }
