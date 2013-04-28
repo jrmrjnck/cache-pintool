@@ -49,7 +49,7 @@ public:
 
    unsigned int lineSize() const { return _lineSize; }
 
-   void downgrade( uintptr_t addr, CacheState newState );
+   void downgrade( uintptr_t addr, CacheState newState, bool safe );
 
    void printStats( std::ostream& stream = std::cout ) const;
 

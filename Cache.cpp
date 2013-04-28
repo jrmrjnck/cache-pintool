@@ -167,7 +167,7 @@ void Cache::_updateLru( unsigned int set, unsigned int usedWay )
    _lines[set][usedWay].age = 0;
 }
 
-void Cache::downgrade( uintptr_t addr, CacheState newState )
+void Cache::downgrade( uintptr_t addr, CacheState newState, bool safe )
 {
    uintptr_t tag    = (addr & _tagMask) >> _tagShift;
    unsigned int set = (addr & _setMask) >> _setShift;
@@ -176,6 +176,7 @@ void Cache::downgrade( uintptr_t addr, CacheState newState )
    assert( targetLine != nullptr );
 
    targetLine->state = newState;
+   targetLine->safe  = safe;
 }
 
 Cache::CacheLine* Cache::_find( unsigned int set, uintptr_t tag ) const

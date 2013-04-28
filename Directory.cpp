@@ -37,8 +37,9 @@ CacheState Directory::request( Cache* cache,
       dirEntry.readOnly = dirEntry.readOnly && (reqState < Modified);
    }
 
+   bool isSafe = !dirEntry.shared || dirEntry.readOnly;
    if( safe != nullptr )
-      *safe = !dirEntry.shared || dirEntry.readOnly;
+      *safe = isSafe;
 
    switch( reqState )
    {
@@ -47,11 +48,11 @@ CacheState Directory::request( Cache* cache,
       {
          // A single cache may have an Exclusive copy
          if( dirEntry.caches.size() == 1 )
-            dirEntry.caches.front()->downgrade( addr, Shared );
+            dirEntry.caches.front()->downgrade( addr, Shared, isSafe );
       }
       else
       {
-         dirEntry.caches.front()->downgrade( addr, Shared );
+         dirEntry.caches.front()->downgrade( addr, Shared, isSafe );
          dirEntry.modified = false;
       }
 
@@ -70,7 +71,7 @@ CacheState Directory::request( Cache* cache,
          for( auto it = dirEntry.caches.begin(); it != dirEntry.caches.end(); ++it )
          {
             if( *it != cache )
-               (*it)->downgrade( addr, Invalid );
+               (*it)->downgrade( addr, Invalid, isSafe );
          }
          dirEntry.caches.clear();
       }
