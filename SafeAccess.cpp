@@ -84,7 +84,7 @@ void addCache( unsigned int tid, CONTEXT* ctxt, int flags, void* v )
 {
    if( tid >= caches.size() )
    {
-      caches.resize( tid + 1, NULL );
+      caches.resize( tid + 1, nullptr );
    }
    caches[tid] = new Cache( 2*KILO, CACHE_LINE_SIZE, 8 );
    caches[tid]->setDirectories( &directorySet );

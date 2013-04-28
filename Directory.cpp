@@ -30,18 +30,15 @@ CacheState Directory::request( Cache* cache,
    {
       dirEntry.owner = cache;
       dirEntry.readOnly = reqState < Modified;
-
-      if( safe != nullptr )
-         *safe = true;
    }
-   else if( dirEntry.owner != cache )
+   else
    {
-      dirEntry.shared = true;
-      dirEntry.readOnly = dirEntry.readOnly || reqState < Modified;
-
-      if( safe != nullptr )
-         *safe = dirEntry.readOnly ? true : false;
+      dirEntry.shared   = (dirEntry.owner != cache);
+      dirEntry.readOnly = dirEntry.readOnly && (reqState < Modified);
    }
+
+   if( safe != nullptr )
+      *safe = !dirEntry.shared || dirEntry.readOnly;
 
    switch( reqState )
    {

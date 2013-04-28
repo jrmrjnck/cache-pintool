@@ -34,6 +34,8 @@ Cache::Cache( size_t cacheSize, size_t lineSize, unsigned int assoc )
    _misses      = 0;
    _hits        = 0;
    _partialHits = 0;
+
+   _safeAccesses = 0;
 }
 
 Cache::~Cache()
@@ -56,7 +58,7 @@ bool Cache::access( AccessType type, uintptr_t addr, size_t length )
    uintptr_t tag    = (addr & _tagMask) >> _tagShift;
 
    CacheLine* targetLine = _find( set, tag );
-   if( targetLine != NULL )
+   if( targetLine != nullptr )
    {
       if( type == Store && targetLine->state < Modified )
          partialHit = true;
