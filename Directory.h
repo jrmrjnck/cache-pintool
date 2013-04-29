@@ -6,7 +6,6 @@
 #include <vector>
 #include <map>
 #include <stdint.h>
-#include <mutex>
 
 class Directory
 {
@@ -38,8 +37,6 @@ private:
       bool shared;
    };
    std::map<uintptr_t,DirectoryEntry> _dir;
-
-   static std::mutex _dirMutex;
 };
 
 class DirectorySet
@@ -53,8 +50,6 @@ private:
    std::vector<Directory*> _sites;
 
    std::map<uintptr_t,unsigned int> _pageMap;
-
-   static std::mutex _dsMutex;
 };
 
 #endif // !DIRECTORY_H

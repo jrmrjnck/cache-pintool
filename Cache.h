@@ -4,7 +4,6 @@
 #include <cstdlib>
 #include <stdint.h>
 #include <iostream>
-#include <mutex>
 
 const int KILO = 1024;
 const int MEGA = KILO*KILO;
@@ -81,8 +80,6 @@ private:
    int _partialHits;
 
    int _safeAccesses;
-
-   std::mutex _cacheLock;
 };
 
 #endif // !CACHE_H

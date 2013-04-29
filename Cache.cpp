@@ -61,8 +61,6 @@ bool Cache::access( AccessType type, uintptr_t addr, size_t length )
    unsigned int set = (addr & _setMask) >> _setShift;
    uintptr_t tag    = (addr & _tagMask) >> _tagShift;
 
-   lock_guard<mutex> lock( _cacheLock );
-
    CacheLine* targetLine = _find( set, tag );
    if( targetLine != nullptr )
    {
@@ -170,8 +168,6 @@ void Cache::_updateLru( unsigned int set, unsigned int usedWay )
 
 void Cache::downgrade( uintptr_t addr, CacheState newState, bool safe )
 {
-   lock_guard<mutex> lock( _cacheLock );
-
    uintptr_t tag    = (addr & _tagMask) >> _tagShift;
    unsigned int set = (addr & _setMask) >> _setShift;
 

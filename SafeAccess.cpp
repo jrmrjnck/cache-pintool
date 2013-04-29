@@ -17,6 +17,8 @@ typedef std::vector<Cache*> CacheList;
 static CacheList caches;
 static DirectorySet directorySet( 1, CACHE_LINE_SIZE );
 
+static PIN_MUTEX mutex;
+
 int printUsage()
 {
    std::cerr << "Usage: " << KNOB_BASE::StringKnobSummary() << std::endl;
@@ -31,14 +33,18 @@ void printIns( THREADID tid, void* v )
 
 void load( uintptr_t addr, unsigned int size, THREADID tid, void* v )
 {
-   cout << tid << " L: " << size << " " << hex << addr << endl;
+   PIN_MutexLock( &mutex );
+   //cout << tid << " L: " << size << " " << hex << addr << endl;
    caches[tid]->access( Cache::Load, addr, size );
+   PIN_MutexUnlock( &mutex );
 }
 
 void store( uintptr_t addr, unsigned int size, THREADID tid, void* v )
 {
-   cout << tid << " S: " << size << " " << hex << addr << endl;
+   PIN_MutexLock( &mutex );
+   //cout << tid << " S: " << size << " " << hex << addr << endl;
    caches[tid]->access( Cache::Store, addr, size );
+   PIN_MutexUnlock( &mutex );
 }
 
 void instrumentTrace( TRACE trace, void* v )
@@ -115,6 +121,8 @@ int main(int argc, char *argv[])
 
    if( PIN_Init(argc,argv) )
       return printUsage();
+
+   PIN_MutexInit( &mutex );
 
    TRACE_AddInstrumentFunction( instrumentTrace, &caches );
    PIN_AddThreadStartFunction( addCache, &caches );
