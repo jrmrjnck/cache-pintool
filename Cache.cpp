@@ -7,7 +7,11 @@
 
 using namespace std;
 
-Cache::Cache( size_t cacheSize, size_t lineSize, unsigned int assoc )
+Cache::Cache( size_t cacheSize, 
+              size_t lineSize, 
+              unsigned int assoc, 
+              DirectorySet* directorySet )
+ : _directorySet(directorySet)
 {
    assert( cacheSize != 0 );
    assert( lineSize != 0 );
@@ -56,6 +60,8 @@ bool Cache::access( AccessType type, uintptr_t addr, size_t length )
 
    unsigned int set = (addr & _setMask) >> _setShift;
    uintptr_t tag    = (addr & _tagMask) >> _tagShift;
+
+   lock_guard<mutex> lock( _cacheLock );
 
    CacheLine* targetLine = _find( set, tag );
    if( targetLine != nullptr )
@@ -142,11 +148,6 @@ bool Cache::access( AccessType type, uintptr_t addr, size_t length )
    return hit;
 }
 
-void Cache::setDirectories( DirectorySet* directorySet )
-{
-   _directorySet = directorySet;
-}
-
 void Cache::_updateLru( unsigned int set, CacheLine* usedLine )
 {
    for( unsigned int w = 0; w < _assoc; ++w )
@@ -169,10 +170,14 @@ void Cache::_updateLru( unsigned int set, unsigned int usedWay )
 
 void Cache::downgrade( uintptr_t addr, CacheState newState, bool safe )
 {
+   lock_guard<mutex> lock( _cacheLock );
+
    uintptr_t tag    = (addr & _tagMask) >> _tagShift;
    unsigned int set = (addr & _setMask) >> _setShift;
 
    CacheLine* targetLine = _find( set, tag );
+   if( targetLine == nullptr )
+      cerr << "downgrade error: " << hex << addr << endl;
    assert( targetLine != nullptr );
 
    targetLine->state = newState;

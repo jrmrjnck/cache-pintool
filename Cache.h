@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <stdint.h>
 #include <iostream>
+#include <mutex>
 
 const int KILO = 1024;
 const int MEGA = KILO*KILO;
@@ -40,12 +41,13 @@ private:
    };
 
 public:
-   Cache( size_t cacheSize, size_t lineSize = 1, unsigned int assoc = 1 );
+   Cache( size_t cacheSize, 
+          size_t lineSize,
+          unsigned int assoc,
+          DirectorySet* directorySet );
    ~Cache();
 
    bool access( AccessType type, uintptr_t addr, size_t length );
-
-   void setDirectories( DirectorySet* directorySet );
 
    unsigned int lineSize() const { return _lineSize; }
 
@@ -79,6 +81,8 @@ private:
    int _partialHits;
 
    int _safeAccesses;
+
+   std::mutex _cacheLock;
 };
 
 #endif // !CACHE_H

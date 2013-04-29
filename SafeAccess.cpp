@@ -23,19 +23,21 @@ int printUsage()
    return -1;
 }
 
-void printIns( void* v )
+void printIns( THREADID tid, void* v )
 {
    char* s = static_cast<char*>(v);
-   cout << s << endl;
+   cout << tid << ": " << s << endl;
 }
 
 void load( uintptr_t addr, unsigned int size, THREADID tid, void* v )
 {
+   cout << tid << " L: " << size << " " << hex << addr << endl;
    caches[tid]->access( Cache::Load, addr, size );
 }
 
 void store( uintptr_t addr, unsigned int size, THREADID tid, void* v )
 {
+   cout << tid << " S: " << size << " " << hex << addr << endl;
    caches[tid]->access( Cache::Store, addr, size );
 }
 
@@ -46,12 +48,15 @@ void instrumentTrace( TRACE trace, void* v )
       for( INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins) )
       {
          // Leak this memory
-         //char* text = strdup( INS_Disassemble(ins).c_str() );
-         //INS_InsertCall( ins, 
-         //                IPOINT_BEFORE, 
-         //                reinterpret_cast<AFUNPTR>(printIns),
-         //                IARG_PTR, text,
-         //                IARG_END );
+         /*
+          *char* text = strdup( INS_Disassemble(ins).c_str() );
+          *INS_InsertCall( ins, 
+          *                IPOINT_BEFORE, 
+          *                reinterpret_cast<AFUNPTR>(printIns),
+          *                IARG_THREAD_ID,
+          *                IARG_PTR, text,
+          *                IARG_END );
+          */
 
          if( INS_IsMemoryRead(ins) )
          {
@@ -86,12 +91,8 @@ void addCache( unsigned int tid, CONTEXT* ctxt, int flags, void* v )
    {
       caches.resize( tid + 1, nullptr );
    }
-   caches[tid] = new Cache( 2*KILO, CACHE_LINE_SIZE, 8 );
-   caches[tid]->setDirectories( &directorySet );
-}
-
-void deleteCache( unsigned int tid, const CONTEXT* ctxt, int code, void* v )
-{
+   caches[tid] = new Cache( 2*KILO, CACHE_LINE_SIZE, 8, &directorySet );
+   cout << "Cache " << tid << " = " << hex << caches[tid] << endl;
 }
 
 void finish( int code, void* v )
@@ -117,7 +118,6 @@ int main(int argc, char *argv[])
 
    TRACE_AddInstrumentFunction( instrumentTrace, &caches );
    PIN_AddThreadStartFunction( addCache, &caches );
-   PIN_AddThreadFiniFunction( deleteCache, &caches );
    PIN_AddFiniFunction( finish, &caches );
 
    PIN_StartProgram();

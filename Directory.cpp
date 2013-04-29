@@ -24,9 +24,7 @@ CacheState Directory::request( Cache* cache,
 {
    lock_guard<mutex> lock( _dirMutex );
 
-   addr >>= _addrShift;
-
-   DirectoryEntry& dirEntry = _dir[addr];
+   DirectoryEntry& dirEntry = _dir[addr >> _addrShift];
 
    if( dirEntry.modified )
       assert( dirEntry.caches.size() == 1 );
