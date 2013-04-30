@@ -19,11 +19,13 @@ CacheState Directory::request( Cache* cache,
                                CacheState reqState, 
                                bool* safe )
 {
+   // Find entry, optionally creating a new one
    DirectoryEntry& dirEntry = _dir[addr >> _addrShift];
 
    if( dirEntry.modified )
       assert( dirEntry.caches.size() == 1 );
 
+   // Update safety state of directory
    if( dirEntry.owner == nullptr )
    {
       dirEntry.owner = cache;
@@ -35,6 +37,7 @@ CacheState Directory::request( Cache* cache,
       dirEntry.readOnly = dirEntry.readOnly && (reqState < Modified);
    }
 
+   // Reduce state down to one bit
    bool isSafe = !dirEntry.shared || dirEntry.readOnly;
    if( safe != nullptr )
       *safe = isSafe;
@@ -42,17 +45,10 @@ CacheState Directory::request( Cache* cache,
    switch( reqState )
    {
    case Shared:
-      if( !dirEntry.modified )
-      {
-         // A single cache may have an Exclusive copy
-         if( dirEntry.caches.size() == 1 )
-            dirEntry.caches.front()->downgrade( addr, Shared, isSafe );
-      }
-      else
-      {
+      if( dirEntry.caches.size() == 1 )
          dirEntry.caches.front()->downgrade( addr, Shared, isSafe );
-         dirEntry.modified = false;
-      }
+
+      dirEntry.modified = false;
 
       dirEntry.caches.push_back( cache );
 
@@ -95,6 +91,13 @@ CacheState Directory::request( Cache* cache,
                break;
             }
          }
+      }
+
+      if( dirEntry.caches.empty() )
+      {
+         dirEntry.owner = nullptr;
+         dirEntry.shared = false;
+         dirEntry.readOnly = true;
       }
       return Invalid;
       break;

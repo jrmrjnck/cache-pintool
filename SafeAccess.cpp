@@ -97,7 +97,7 @@ void addCache( unsigned int tid, CONTEXT* ctxt, int flags, void* v )
    {
       caches.resize( tid + 1, nullptr );
    }
-   caches[tid] = new Cache( 2*KILO, CACHE_LINE_SIZE, 8, &directorySet );
+   caches[tid] = new Cache( 512*KILO, CACHE_LINE_SIZE, 4, &directorySet );
    cout << "Cache " << tid << " = " << hex << caches[tid] << endl;
 }
 

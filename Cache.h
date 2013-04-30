@@ -80,6 +80,8 @@ private:
    int _partialHits;
 
    int _safeAccesses;
+   int _multilineAccesses;
+   int _downgrades;
 };
 
 #endif // !CACHE_H

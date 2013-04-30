@@ -40,6 +40,8 @@ Cache::Cache( size_t cacheSize,
    _partialHits = 0;
 
    _safeAccesses = 0;
+   _multilineAccesses = 0;
+   _downgrades = 0;
 }
 
 Cache::~Cache()
@@ -141,6 +143,7 @@ bool Cache::access( AccessType type, uintptr_t addr, size_t length )
       uintptr_t nextSetBase = (addr & ~_offsetMask) + (1 << _setShift);
       size_t curSetLen = _lineSize - (addr & _offsetMask);
       hit = hit && access( type, nextSetBase, length-curSetLen );
+      ++_multilineAccesses;
    }
 
    return hit;
@@ -172,12 +175,14 @@ void Cache::downgrade( uintptr_t addr, CacheState newState, bool safe )
    unsigned int set = (addr & _setMask) >> _setShift;
 
    CacheLine* targetLine = _find( set, tag );
-   if( targetLine == nullptr )
-      cerr << "downgrade error: " << hex << addr << endl;
+
    assert( targetLine != nullptr );
+   assert( newState == Invalid || newState == Shared );
 
    targetLine->state = newState;
    targetLine->safe  = safe;
+
+   ++_downgrades;
 }
 
 Cache::CacheLine* Cache::_find( unsigned int set, uintptr_t tag ) const
@@ -197,5 +202,7 @@ void Cache::printStats( std::ostream& stream ) const
    stream << accesses << " Total Accesses"
           << " (" << 100.0*_hits/accesses << "% Hits)"
           << " (" << 100.0*_safeAccesses/accesses << "% Safe)" 
+          << " (" << _multilineAccesses << " Multiline)"
+          << " (" << _downgrades << " Downgrades)"
           << endl;
 }
