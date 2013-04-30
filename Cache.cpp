@@ -74,7 +74,6 @@ bool Cache::access( AccessType type, uintptr_t addr, size_t length )
 
    if( hit )
    {
-      _updateLru( set, targetLine );
       ++_hits;
       if( targetLine->safe )
          ++_safeAccesses;
@@ -92,7 +91,6 @@ bool Cache::access( AccessType type, uintptr_t addr, size_t length )
       {
          targetLine->state = repState;
          targetLine->safe  = safe;
-         _updateLru( set, targetLine );
          ++_partialHits;
       }
       else
@@ -129,11 +127,12 @@ bool Cache::access( AccessType type, uintptr_t addr, size_t length )
          destLine.tag   = tag;
          destLine.state = repState;
          destLine.safe  = safe;
-         _updateLru( set, lruWay );
 
          ++_misses;
       }
    }
+
+   _updateLru( set, targetLine );
 
    // Check if more lines need to be accessed
    uintptr_t endAddr = addr + length - 1;
