@@ -11,7 +11,9 @@
 
 using namespace std;
 
+const unsigned int CACHE_SIZE = 256*KILO;
 const unsigned int CACHE_LINE_SIZE = 64;
+const unsigned int CACHE_ASSOCIATIVITY = 8;
 
 typedef std::vector<Cache*> CacheList;
 static CacheList caches;
@@ -102,7 +104,10 @@ void addCache( unsigned int tid, CONTEXT* ctxt, int flags, void* v )
    {
       caches.resize( tid + 1, nullptr );
    }
-   caches[tid] = new Cache( 512*KILO, CACHE_LINE_SIZE, 4, &directorySet );
+   caches[tid] = new Cache( CACHE_SIZE, 
+                            CACHE_LINE_SIZE, 
+                            CACHE_ASSOCIATIVITY, 
+                            &directorySet );
    //cout << "Cache " << tid << " = " << hex << caches[tid] << endl;
 }
 
