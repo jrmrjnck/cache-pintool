@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <stdint.h>
 #include <iostream>
+#include <map>
 
 const int KILO = 1024;
 const int MEGA = KILO*KILO;
@@ -82,6 +83,8 @@ private:
    int _safeAccesses;
    int _multilineAccesses;
    int _downgrades;
+
+   std::map<uintptr_t,unsigned int> _downgradeCount;
 };
 
 #endif // !CACHE_H

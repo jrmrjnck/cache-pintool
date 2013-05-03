@@ -125,7 +125,7 @@ Directory& DirectorySet::find( uintptr_t addr )
    uintptr_t vpn = addr >> PAGE_SHIFT;
    unsigned int ppn;
 
-   map<uintptr_t,unsigned int>::const_iterator it = _pageMap.find( vpn );
+   auto it = _pageMap.find( vpn );
 
    if( it != _pageMap.end() )
       ppn = it->second;
@@ -170,7 +170,7 @@ void DirectorySet::printStats( ostream& stream ) const
 
       for( auto it = _sites[i]->_dir.begin(); it != _sites[i]->_dir.end(); ++it )
       {
-         const Directory::DirectoryEntry& entry = it->second;
+         auto& entry = it->second;
          if( entry.owner == nullptr )
             ++untouched;
          else if( !entry.shared )

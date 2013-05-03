@@ -103,13 +103,15 @@ void addCache( unsigned int tid, CONTEXT* ctxt, int flags, void* v )
       caches.resize( tid + 1, nullptr );
    }
    caches[tid] = new Cache( 512*KILO, CACHE_LINE_SIZE, 4, &directorySet );
-   cout << "Cache " << tid << " = " << hex << caches[tid] << endl;
+   //cout << "Cache " << tid << " = " << hex << caches[tid] << endl;
 }
 
 void finish( int code, void* v )
 {
    ofstream file( outputFile.Value().c_str() );
    assert( file.good() );
+
+   file << endl;
 
    for( unsigned int i = 0; i < caches.size(); ++i )
    {

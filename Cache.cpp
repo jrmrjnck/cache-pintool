@@ -189,6 +189,8 @@ void Cache::downgrade( uintptr_t addr, CacheState newState, bool safe )
    targetLine->safe  = safe;
 
    ++_downgrades;
+
+   _downgradeCount[addr >> _setShift]++;
 }
 
 Cache::CacheLine* Cache::_find( unsigned int set, uintptr_t tag ) const
@@ -205,10 +207,29 @@ Cache::CacheLine* Cache::_find( unsigned int set, uintptr_t tag ) const
 void Cache::printStats( std::ostream& stream ) const
 {
    int accesses = _misses + _hits + _partialHits;
-   stream << accesses << " Total Accesses"
+   stream << "  " << accesses << " Total Accesses"
           << " (" << 100.0*_hits/accesses << "% Hits)"
           << " (" << 100.0*_safeAccesses/accesses << "% Safe)" 
           << " (" << _multilineAccesses << " Multiline)"
           << " (" << _downgrades << " Downgrades)"
           << endl;
+
+   multimap<unsigned int,uintptr_t> topAddrs;
+
+   for( auto it = _downgradeCount.begin(); it != _downgradeCount.end(); ++it )
+   {
+      topAddrs.insert( make_pair(it->second,it->first) );
+
+      if( topAddrs.size() > 5 )
+         topAddrs.erase( topAddrs.begin() );
+   }
+
+   stream << "  Top downgraded addresses:";
+
+   for( auto it = topAddrs.rbegin(); it != topAddrs.rend(); ++it )
+   {
+       stream << " (" << hex << (it->second << _setShift) << " : " << dec << it->first << ")";
+   }
+
+   stream << endl;
 }
