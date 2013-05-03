@@ -19,6 +19,11 @@ static DirectorySet directorySet( 1, CACHE_LINE_SIZE );
 
 static PIN_MUTEX mutex;
 
+static KNOB<string> outputFile(KNOB_MODE_WRITEONCE, "pintool",
+                               "o", "safeaccess.log", "Specify output file name" );
+static KNOB<bool> allowReverse(KNOB_MODE_WRITEONCE, "pintool",
+                               "r", "false", "Allow reverse transitions (unsafe to safe)" );
+
 int printUsage()
 {
    std::cerr << "Usage: " << KNOB_BASE::StringKnobSummary() << std::endl;
@@ -103,7 +108,7 @@ void addCache( unsigned int tid, CONTEXT* ctxt, int flags, void* v )
 
 void finish( int code, void* v )
 {
-   ofstream file( "safeaccess.log" );
+   ofstream file( outputFile.Value().c_str() );
    assert( file.good() );
 
    for( unsigned int i = 0; i < caches.size(); ++i )
@@ -113,6 +118,8 @@ void finish( int code, void* v )
       delete caches[i];
    }
    caches.clear();
+
+   file.close();
 }
 
 int main(int argc, char *argv[])
@@ -121,6 +128,8 @@ int main(int argc, char *argv[])
 
    if( PIN_Init(argc,argv) )
       return printUsage();
+
+   directorySet.setAllowReverseTransition( allowReverse.Value() );
 
    PIN_MutexInit( &mutex );
 

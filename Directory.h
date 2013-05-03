@@ -37,6 +37,10 @@ private:
       bool shared;
    };
    std::map<uintptr_t,DirectoryEntry> _dir;
+
+   // DirectorySet wants access to these members
+   friend class DirectorySet;
+   bool _allowReverseTransition;
 };
 
 class DirectorySet
@@ -45,6 +49,8 @@ public:
    DirectorySet( unsigned int numSites, unsigned int lineSize );
 
    Directory& find( uintptr_t addr );
+
+   void setAllowReverseTransition( bool allow );
 
 private:
    std::vector<Directory*> _sites;

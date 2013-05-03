@@ -10,7 +10,8 @@ const int PAGE_SHIFT = 12;
 const int PAGE_SIZE = (1 << PAGE_SHIFT);
 
 Directory::Directory( unsigned int lineSize )
- : _addrShift(floorLog2(lineSize))
+ : _addrShift(floorLog2(lineSize)),
+   _allowReverseTransition(false)
 {
 }
 
@@ -94,7 +95,7 @@ CacheState Directory::request( Cache* cache,
       }
 
       // Transition back to safe if no caches have a copy anymore
-      if( dirEntry.caches.empty() )
+      if( _allowReverseTransition && dirEntry.caches.empty() )
       {
          dirEntry.owner = nullptr;
          dirEntry.shared = false;
@@ -137,4 +138,12 @@ Directory& DirectorySet::find( uintptr_t addr )
    int siteId = ppn % _sites.size();
 
    return *_sites[siteId];
+}
+
+void DirectorySet::setAllowReverseTransition( bool allow )
+{
+   for( auto it = _sites.begin(); it != _sites.end(); ++it )
+   {
+      (*it)->_allowReverseTransition = allow;
+   }
 }
