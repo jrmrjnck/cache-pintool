@@ -6,9 +6,11 @@
 #include <vector>
 #include <map>
 #include <stdint.h>
+#include <iostream>
 
 class Directory
 {
+   friend class DirectorySet;
 public:
    Directory( unsigned int lineSize );
 
@@ -38,8 +40,6 @@ private:
    };
    std::map<uintptr_t,DirectoryEntry> _dir;
 
-   // DirectorySet wants access to these members
-   friend class DirectorySet;
    bool _allowReverseTransition;
 };
 
@@ -48,9 +48,12 @@ class DirectorySet
 public:
    DirectorySet( unsigned int numSites, unsigned int lineSize );
 
+   // Return the Directory that is the homesite for the given addr
    Directory& find( uintptr_t addr );
 
    void setAllowReverseTransition( bool allow );
+
+   void printStats( std::ostream& stream = std::cout ) const;
 
 private:
    std::vector<Directory*> _sites;

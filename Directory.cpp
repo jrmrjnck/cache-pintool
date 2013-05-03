@@ -147,3 +147,70 @@ void DirectorySet::setAllowReverseTransition( bool allow )
       (*it)->_allowReverseTransition = allow;
    }
 }
+
+void DirectorySet::printStats( ostream& stream ) const
+{
+   int numLinesTotal = 0;
+   int untouchedTotal = 0;
+   int p_roTotal = 0;
+   int p_rwTotal = 0;
+   int s_roTotal = 0;
+   int s_rwTotal = 0;
+
+   for( unsigned int i = 0; i < _sites.size(); ++i )
+   {
+      stream << "Site " << i << endl;
+
+      int numLines = _sites[i]->_dir.size();
+      int untouched = 0;
+      int p_ro = 0;
+      int p_rw = 0;
+      int s_ro = 0;
+      int s_rw = 0;
+
+      for( auto it = _sites[i]->_dir.begin(); it != _sites[i]->_dir.end(); ++it )
+      {
+         const Directory::DirectoryEntry& entry = it->second;
+         if( entry.owner == nullptr )
+            ++untouched;
+         else if( !entry.shared )
+         {
+            if( entry.readOnly )
+               ++p_ro;
+            else
+               ++p_rw;
+         }
+         else
+         {
+            if( entry.readOnly )
+               ++s_ro;
+            else
+               ++s_rw;
+         }
+      }
+
+      stream << numLines << " Total lines accessed"
+             << " (" << 100.0*untouched/numLines << "% Untouched)"
+             << " (" << 100.0*p_ro/numLines << "% P_RO)"
+             << " (" << 100.0*p_rw/numLines << "% P_RW)"
+             << " (" << 100.0*s_ro/numLines << "% S_RO)"
+             << " (" << 100.0*s_rw/numLines << "% S_RW)"
+             << endl;
+
+      numLinesTotal += numLines;
+      untouchedTotal += untouched;
+      p_roTotal += p_ro;
+      p_rwTotal += p_rw;
+      s_roTotal += s_ro;
+      s_rwTotal += s_rw;
+   }
+
+   stream << "All Sites" << endl;
+   stream << numLinesTotal << " Total lines accessed"
+          << " (" << 100.0*untouchedTotal/numLinesTotal << "% Untouched)"
+          << " (" << 100.0*p_roTotal/numLinesTotal << "% P_RO)"
+          << " (" << 100.0*p_rwTotal/numLinesTotal << "% P_RW)"
+          << " (" << 100.0*s_roTotal/numLinesTotal << "% S_RO)"
+          << " (" << 100.0*s_rwTotal/numLinesTotal << "% S_RW)"
+          << endl;
+}

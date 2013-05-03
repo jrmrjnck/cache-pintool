@@ -15,7 +15,7 @@ const unsigned int CACHE_LINE_SIZE = 64;
 
 typedef std::vector<Cache*> CacheList;
 static CacheList caches;
-static DirectorySet directorySet( 1, CACHE_LINE_SIZE );
+static DirectorySet directorySet( 2, CACHE_LINE_SIZE );
 
 static PIN_MUTEX mutex;
 
@@ -118,6 +118,9 @@ void finish( int code, void* v )
       delete caches[i];
    }
    caches.clear();
+
+   file << endl;
+   directorySet.printStats( file );
 
    file.close();
 }
