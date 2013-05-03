@@ -42,6 +42,7 @@ Cache::Cache( size_t cacheSize,
    _safeAccesses = 0;
    _multilineAccesses = 0;
    _downgrades = 0;
+   _rscFlush = 0;
 }
 
 Cache::~Cache()
@@ -185,6 +186,12 @@ void Cache::downgrade( uintptr_t addr, CacheState newState, bool safe )
    assert( targetLine != nullptr );
    assert( newState == Invalid || newState == Shared );
 
+   // Reactive SC flush condition
+   if( targetLine->safe && !safe )
+   {
+      ++_rscFlush;
+   }
+
    targetLine->state = newState;
    targetLine->safe  = safe;
 
@@ -212,6 +219,7 @@ void Cache::printStats( std::ostream& stream ) const
           << " (" << 100.0*_safeAccesses/accesses << "% Safe)" 
           << " (" << _multilineAccesses << " Multiline)"
           << " (" << _downgrades << " Downgrades)"
+          << " (" << _rscFlush << " RSC Flushes)"
           << endl;
 
    multimap<unsigned int,uintptr_t> topAddrs;

@@ -83,6 +83,7 @@ private:
    int _safeAccesses;
    int _multilineAccesses;
    int _downgrades;
+   int _rscFlush;
 
    std::map<uintptr_t,unsigned int> _downgradeCount;
 };
