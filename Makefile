@@ -8,7 +8,7 @@ CXX = g++
 CXXFLAGS = -DBIGARRAY_MULTIPLIER=-1 -DUSING_XED -Wall -Wno-unknown-pragmas -fno-stack-protector\
             -DTARGET_IA32E -DHOST_IA32E -fPIC -DTARGET_LINUX -I/opt/pin/source/include/pin\
 				-I/opt/pin/source/include/pin/gen -I/opt/pin/extras/components/include\
-				-I/opt/pin/extras/xed2-intel64/include -I/opt/pin/source/tools/InstLib -O0\
+				-I/opt/pin/extras/xed2-intel64/include -I/opt/pin/source/tools/InstLib -O3\
 				-fomit-frame-pointer -fno-strict-aliasing\
 				-std=c++11 -g
 LDFLAGS = -shared -Wl,--hash-style=sysv -Wl,-Bsymbolic -Wl,--version-script=/opt/pin/source/include/pin/pintool.ver -g

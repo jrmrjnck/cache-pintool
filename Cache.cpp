@@ -66,7 +66,8 @@ bool Cache::access( AccessType type, uintptr_t addr, size_t length )
    CacheLine* targetLine = _find( set, tag );
    if( targetLine != nullptr )
    {
-      if( type == Store && targetLine->state < Modified )
+      assert( targetLine->state != Invalid );
+      if( type == Store && targetLine->state < Exclusive )
          partialHit = true;
       else
          hit = true;
@@ -75,11 +76,16 @@ bool Cache::access( AccessType type, uintptr_t addr, size_t length )
    if( hit )
    {
       ++_hits;
+
+      if( type == Store )
+         targetLine->state = Modified;
+
       if( targetLine->safe )
          ++_safeAccesses;
    }
    else
    {
+      // Directory request needed for anything other than full hit
       bool safe;
       Directory& dir = _directorySet->find( addr );
       CacheState reqState = (type == Load) ? Shared : Modified;
@@ -89,6 +95,7 @@ bool Cache::access( AccessType type, uintptr_t addr, size_t length )
 
       if( partialHit )
       {
+         assert( repState == Modified );
          targetLine->state = repState;
          targetLine->safe  = safe;
          ++_partialHits;

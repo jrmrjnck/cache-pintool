@@ -93,6 +93,7 @@ CacheState Directory::request( Cache* cache,
          }
       }
 
+      // Transition back to safe if no caches have a copy anymore
       if( dirEntry.caches.empty() )
       {
          dirEntry.owner = nullptr;
