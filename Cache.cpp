@@ -128,7 +128,7 @@ bool Cache::access( AccessType type, uintptr_t addr, size_t length )
          {
             uintptr_t evictAddr = destLine.tag << _tagShift;
             evictAddr |= set << _setShift;
-            dir.request( this, evictAddr, Invalid );
+            _directorySet->find( evictAddr ).request( this, evictAddr, Invalid );
          }
 
          destLine.tag   = tag;
