@@ -8,6 +8,7 @@
 #include <vector>
 #include <cstring>
 #include <cassert>
+#include <iomanip>
 
 using namespace std;
 
@@ -116,17 +117,39 @@ void finish( int code, void* v )
    ofstream file( outputFile.Value().c_str() );
    assert( file.good() );
 
+   file.precision(3);
+   file << fixed;
    file << endl;
+
+   file << setw(8) << ""
+        << setw(10) << "Total Accesses"
+        << setw(15) << "Hit Rate" 
+        << setw(15) << "Safe Rate" 
+        //<< setw(15) << "Multiline" 
+        << setw(15) << "Downgrades" 
+        << setw(15) << "RSC Flushes" 
+        << endl;
 
    for( unsigned int i = 0; i < caches.size(); ++i )
    {
-      file << "Cache " << i << endl;
-      caches[i]->printStats( file );
+      file << "Cache " << i;
+
+      const Cache& c = *caches[i];
+
+      file << setw(15) << c.accesses()
+           << setw(14) << c.hitRate() << "%"
+           << setw(14) << c.safeRate() << "%"
+           //<< setw(15) << c.multilineAccesses()
+           << setw(15) << c.downgrades()
+           << setw(15) << c.rscFlushes()
+           << endl;
+
       delete caches[i];
    }
    caches.clear();
 
    file << endl;
+
    directorySet.printStats( file );
 
    file.close();

@@ -53,7 +53,14 @@ public:
 
    void downgrade( uintptr_t addr, CacheState newState, bool safe );
 
-   void printStats( std::ostream& stream = std::cout ) const;
+   // Statistics interface
+   int   accesses()          const { return _misses+_hits+_partialHits; }
+   float hitRate()           const { return 100.0*_hits/accesses(); }
+   float safeRate()          const { return 100.0*_safeAccesses/accesses(); }
+   int   multilineAccesses() const { return _multilineAccesses; }
+   int   downgrades()        const { return _downgrades; }
+   int   rscFlushes()        const { return _rscFlush; }
+   std::multimap<unsigned int,uintptr_t> downgradeMap( unsigned int count = 5 ) const;
 
 private:
    void _updateLru( unsigned int set, CacheLine* usedLine );

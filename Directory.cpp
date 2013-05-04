@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <iomanip>
 
 using namespace std;
 
@@ -157,9 +158,18 @@ void DirectorySet::printStats( ostream& stream ) const
    int s_roTotal = 0;
    int s_rwTotal = 0;
 
+   stream << setw(10) << ""
+          << setw(12) << "Unique Lines"
+          << setw(15) << "Untouched"
+          << setw(15) << "P_RO"
+          << setw(15) << "P_RW"
+          << setw(15) << "S_RO"
+          << setw(15) << "S_RW"
+          << endl;
+
    for( unsigned int i = 0; i < _sites.size(); ++i )
    {
-      stream << "Site " << i << endl;
+      stream << "Site " << i;
 
       int numLines = _sites[i]->_dir.size();
       int untouched = 0;
@@ -189,12 +199,12 @@ void DirectorySet::printStats( ostream& stream ) const
          }
       }
 
-      stream << numLines << " Total lines accessed"
-             << " (" << 100.0*untouched/numLines << "% Untouched)"
-             << " (" << 100.0*p_ro/numLines << "% P_RO)"
-             << " (" << 100.0*p_rw/numLines << "% P_RW)"
-             << " (" << 100.0*s_ro/numLines << "% S_RO)"
-             << " (" << 100.0*s_rw/numLines << "% S_RW)"
+      stream << setw(16) << numLines
+             << setw(14) << 100.0*untouched/numLines << "%"
+             << setw(14) << 100.0*p_ro/numLines << "%"
+             << setw(14) << 100.0*p_rw/numLines << "%"
+             << setw(14) << 100.0*s_ro/numLines << "%"
+             << setw(14) << 100.0*s_rw/numLines << "%"
              << endl;
 
       numLinesTotal += numLines;
@@ -205,12 +215,12 @@ void DirectorySet::printStats( ostream& stream ) const
       s_rwTotal += s_rw;
    }
 
-   stream << "All Sites" << endl;
-   stream << numLinesTotal << " Total lines accessed"
-          << " (" << 100.0*untouchedTotal/numLinesTotal << "% Untouched)"
-          << " (" << 100.0*p_roTotal/numLinesTotal << "% P_RO)"
-          << " (" << 100.0*p_rwTotal/numLinesTotal << "% P_RW)"
-          << " (" << 100.0*s_roTotal/numLinesTotal << "% S_RO)"
-          << " (" << 100.0*s_rwTotal/numLinesTotal << "% S_RW)"
+   stream << "All Sites"
+          << setw(13) << numLinesTotal
+          << setw(14) << 100.0*untouchedTotal/numLinesTotal << "%"
+          << setw(14) << 100.0*p_roTotal/numLinesTotal << "%"
+          << setw(14) << 100.0*p_rwTotal/numLinesTotal << "%"
+          << setw(14) << 100.0*s_roTotal/numLinesTotal << "%"
+          << setw(14) << 100.0*s_rwTotal/numLinesTotal << "%"
           << endl;
 }
