@@ -211,9 +211,9 @@ Cache::CacheLine* Cache::_find( unsigned int set, uintptr_t tag ) const
    return nullptr;
 }
 
-multimap<unsigned int,uintptr_t> Cache::downgradeMap( unsigned int count ) const
+multimap<unsigned long int,uintptr_t> Cache::downgradeMap( unsigned int count ) const
 {
-   multimap<unsigned int,uintptr_t> topAddrs;
+   multimap<unsigned long int,uintptr_t> topAddrs;
 
    for( auto it = _downgradeCount.begin(); it != _downgradeCount.end(); ++it )
    {

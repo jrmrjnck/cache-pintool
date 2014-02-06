@@ -54,13 +54,15 @@ public:
    void downgrade( uintptr_t addr, CacheState newState, bool safe );
 
    // Statistics interface
-   int   accesses()          const { return _misses+_hits+_partialHits; }
-   float hitRate()           const { return 100.0*_hits/accesses(); }
-   float safeRate()          const { return 100.0*_safeAccesses/accesses(); }
-   int   multilineAccesses() const { return _multilineAccesses; }
-   int   downgrades()        const { return _downgrades; }
-   int   rscFlushes()        const { return _rscFlush; }
-   std::multimap<unsigned int,uintptr_t> downgradeMap( unsigned int count = 5 ) const;
+   unsigned long int accesses()          const { return _misses+_hits+_partialHits; }
+   float             hitRate()           const { return static_cast<float>(_hits)/accesses(); }
+   float             safeRate()          const { return static_cast<float>(_safeAccesses)/accesses(); }
+   unsigned long int multilineAccesses() const { return _multilineAccesses; }
+   unsigned long int downgrades()        const { return _downgrades; }
+   unsigned long int rscFlushes()        const { return _rscFlush; }
+
+   const std::map<uintptr_t, unsigned long int>& downgradeCount() const { return _downgradeCount; }
+   std::multimap<unsigned long int,uintptr_t> downgradeMap( unsigned int count = 5 ) const;
 
 private:
    void _updateLru( unsigned int set, CacheLine* usedLine );
@@ -83,16 +85,16 @@ private:
 
    DirectorySet* _directorySet;
 
-   int _misses;
-   int _hits;
-   int _partialHits;
+   unsigned long int _misses;
+   unsigned long int _hits;
+   unsigned long int _partialHits;
 
-   int _safeAccesses;
-   int _multilineAccesses;
-   int _downgrades;
-   int _rscFlush;
+   unsigned long int _safeAccesses;
+   unsigned long int _multilineAccesses;
+   unsigned long int _downgrades;
+   unsigned long int _rscFlush;
 
-   std::map<uintptr_t,unsigned int> _downgradeCount;
+   std::map<uintptr_t,unsigned long int> _downgradeCount;
 };
 
 #endif // !CACHE_H

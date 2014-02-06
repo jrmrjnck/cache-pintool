@@ -123,12 +123,22 @@ void finish( int code, void* v )
 
    file << setw(8) << ""
         << setw(10) << "Total Accesses"
-        << setw(15) << "Hit Rate" 
-        << setw(15) << "Safe Rate" 
+        << setw(11) << "Hit Rate" 
+        << setw(12) << "Safe Rate" 
         //<< setw(15) << "Multiline" 
-        << setw(15) << "Downgrades" 
-        << setw(15) << "RSC Flushes" 
+        << setw(13) << "Downgrades" 
+        << setw(13) << "RSC Flushes" 
         << endl;
+
+   unsigned long int totalAccesses = 0;
+   unsigned long int totalHits = 0;
+   unsigned long int totalSafe = 0;
+   unsigned long int totalDowngrades = 0;
+   unsigned long int totalRscFlushes = 0;
+
+   map<uintptr_t, unsigned long int> totalDowngradeCount;
+   uintptr_t totalTopAddr;
+   unsigned long int totalTopCount = 0;
 
    for( unsigned int i = 0; i < caches.size(); ++i )
    {
@@ -136,19 +146,59 @@ void finish( int code, void* v )
 
       const Cache& c = *caches[i];
 
+      totalAccesses += c.accesses();
+      totalHits     += c.hitRate() * c.accesses();
+      totalSafe     += c.safeRate() * c.accesses();
+      totalDowngrades += c.downgrades();
+      totalRscFlushes += c.rscFlushes();
+
       file << setw(15) << c.accesses()
-           << setw(14) << c.hitRate() << "%"
-           << setw(14) << c.safeRate() << "%"
+           << setw(10) << 100.0*c.hitRate() << "%"
+           << setw(11) << 100.0*c.safeRate() << "%"
            //<< setw(15) << c.multilineAccesses()
-           << setw(15) << c.downgrades()
-           << setw(15) << c.rscFlushes()
-           << endl;
+           << setw(13) << c.downgrades()
+           << setw(13) << c.rscFlushes()
+           /*<< endl*/;
+
+      // Print the most common downgrades from this cache
+      const auto& dm = c.downgradeMap( 3 );
+      for( auto it = dm.rbegin(); it != dm.rend(); ++it )
+      {
+         file << " (" << hex << it->second << " : " 
+              << fixed << (100.0*it->first/c.downgrades()) << "%)";
+      }
+
+      // Add all downgrades into total
+      const auto& dc = c.downgradeCount();
+      for( auto it = dc.begin(); it != dc.end(); ++it )
+      {
+         auto curCount = totalDowngradeCount[it->first];
+         curCount += it->second;
+         if( curCount > totalTopCount )
+         {
+            totalTopAddr = it->first;
+            totalTopCount = curCount;
+         }
+         totalDowngradeCount[it->first] = curCount;
+      }
+
+      file << dec << endl;
 
       delete caches[i];
    }
    caches.clear();
 
-   file << endl;
+   file << "Totals ";
+   file << setw(15) << totalAccesses
+        << setw(10) << 100.0*totalHits/totalAccesses << "%"
+        << setw(11) << 100.0*totalSafe/totalAccesses << "%"
+        << setw(13) << totalDowngrades
+        << setw(13) << totalRscFlushes;
+
+   file << " (" << hex << totalTopAddr << " : "
+        << fixed << (100.0*totalTopCount/totalDowngrades) << "%)";
+
+   file << dec << endl << endl;
 
    directorySet.printStats( file );
 

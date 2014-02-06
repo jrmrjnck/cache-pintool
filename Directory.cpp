@@ -160,11 +160,11 @@ void DirectorySet::printStats( ostream& stream ) const
 
    stream << setw(10) << ""
           << setw(12) << "Unique Lines"
-          << setw(15) << "Untouched"
-          << setw(15) << "P_RO"
-          << setw(15) << "P_RW"
-          << setw(15) << "S_RO"
-          << setw(15) << "S_RW"
+          << setw(11) << "Untouched"
+          << setw(12) << "P_RO"
+          << setw(13) << "P_RW"
+          << setw(13) << "S_RO"
+          << setw(11) << "S_RW"
           << endl;
 
    for( unsigned int i = 0; i < _sites.size(); ++i )
@@ -200,11 +200,11 @@ void DirectorySet::printStats( ostream& stream ) const
       }
 
       stream << setw(16) << numLines
-             << setw(14) << 100.0*untouched/numLines << "%"
-             << setw(14) << 100.0*p_ro/numLines << "%"
-             << setw(14) << 100.0*p_rw/numLines << "%"
-             << setw(14) << 100.0*s_ro/numLines << "%"
-             << setw(14) << 100.0*s_rw/numLines << "%"
+             << setw(10) << 100.0*untouched/numLines << "%"
+             << setw(11) << 100.0*p_ro/numLines << "%"
+             << setw(12) << 100.0*p_rw/numLines << "%"
+             << setw(12) << 100.0*s_ro/numLines << "%"
+             << setw(10) << 100.0*s_rw/numLines << "%"
              << endl;
 
       numLinesTotal += numLines;
@@ -217,10 +217,10 @@ void DirectorySet::printStats( ostream& stream ) const
 
    stream << "All Sites"
           << setw(13) << numLinesTotal
-          << setw(14) << 100.0*untouchedTotal/numLinesTotal << "%"
-          << setw(14) << 100.0*p_roTotal/numLinesTotal << "%"
-          << setw(14) << 100.0*p_rwTotal/numLinesTotal << "%"
-          << setw(14) << 100.0*s_roTotal/numLinesTotal << "%"
-          << setw(14) << 100.0*s_rwTotal/numLinesTotal << "%"
+          << setw(10) << 100.0*untouchedTotal/numLinesTotal << "%"
+          << setw(11) << 100.0*p_roTotal/numLinesTotal << "%"
+          << setw(12) << 100.0*p_rwTotal/numLinesTotal << "%"
+          << setw(12) << 100.0*s_roTotal/numLinesTotal << "%"
+          << setw(10) << 100.0*s_rwTotal/numLinesTotal << "%"
           << endl;
 }
